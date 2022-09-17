@@ -5,7 +5,7 @@ type iposMessagingCallback = (message: iposMessagingMessage) => (any | void)
 type iposMessagingMessage = {
     protocol: 'ipos',
     type: iposMessagingType,
-    fields?: Buffer
+    fields?: string
 }
 
 const mustHaveSendError = new Error(`Process must have a \`.send()\` method.`)

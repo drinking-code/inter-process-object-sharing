@@ -1,9 +1,9 @@
 export default class InterceptedArray<T> extends Array {
-    private callback
+    private readonly callback
 
     // intercepts only methods that change the object
     constructor(callback: (object: object, method: string, ...args: any) => void) {
-        super();
+        super()
         this.callback = callback
     }
 

@@ -1,24 +1,31 @@
-import {deserialize, serialize} from 'v8'
 import {ChildProcess} from 'child_process'
-import InterceptedArray from './array.js'
+import initChild from './init-child.js'
 import IPOSMessaging from './messaging.js'
+import {deserialize, serialize} from './serialize.js'
+import intercept from './intercept.js'
 
 export default class IPOS {
-    private fields: Map<string, object>
+    private readonly fields: Map<string, object>
     private fieldsReverseMap: Map<object, string>
-    private processes: Set<ChildProcess>
     private processMessagingMap: Map<ChildProcess, IPOSMessaging>
     private readonly proxy
-    private messaging?: IPOSMessaging;
+    protected messaging?: IPOSMessaging
 
-    static new(): IPOS {
-        return new IPOS()
+    static new(): IPOS | Promise<IPOS> {
+        const ipos = new IPOS()
+        // was called on child process
+        if (process.send) {
+            return new Promise(async resolve => {
+                await initChild.call(ipos)
+                resolve(ipos)
+            })
+        }
+        return ipos
     }
 
     constructor() {
         this.fields = new Map()
         this.fieldsReverseMap = new Map()
-        this.processes = new Set()
         this.processMessagingMap = new Map()
 
         // proxy makes all "target.fields" available as "actual" fields
@@ -31,39 +38,21 @@ export default class IPOS {
                 }
             }
         })
-        // was called on child process
-        if (process.send) {
-            this.messaging?.listenForType('sync', message => {
-                console.log(message)
-                if (message.fields)
-                    this.fields = deserialize(message.fields)
-            })
-
-            // register with parent process
-            this.messaging = new IPOSMessaging(process)
-            this.messaging.send('register')
-        }
         return this.proxy
     }
 
+    public get(key: string): any {
+        return this.fields.get(key)
+    }
+
+    // todo: also accept and update non object values
     public create(key: string, value: object): void {
-        if (Array.isArray(value)) {
-            value = new InterceptedArray((object, method, ...args) =>
+        // console.log('create', key)
+        if (typeof value === 'object')
+            value = intercept(value, (object, method, ...args) =>
                 this.sendMethodCall(object, method, ...args)
             )
-        }
-        /*Object.getOwnPropertyNames(Object.getPrototypeOf(value))
-            .filter(methodName => !(methodName.startsWith('__') && methodName.endsWith('__')))
-            .forEach(methodName => {
-                if (!value[methodName]) return
-                const method = value[methodName]
-                value[methodName] = function (...args: any) {
-                    // interception
-                    console.log(methodName)
-                    method.call(value, ...args)
-                }
-            })
-        */
+
         this.fields.set(key, value)
         this.fieldsReverseMap.set(value, key)
         // todo: send update message
@@ -84,16 +73,14 @@ export default class IPOS {
             if (registered) return
             registered = true
 
-            this.processes.add(process)
             this.processMessagingMap.set(process, messaging)
             this.syncProcess(process)
         })
     }
 
     private syncProcess(process: ChildProcess) {
-        console.log('sending sync')
         this.processMessagingMap.get(process)?.send('sync', {
-            field: serialize(this.fields)
+            fields: JSON.stringify(IPOS.serialize(this.fields))
         })
     }
 
@@ -107,30 +94,14 @@ export default class IPOS {
         })
     }
 
-    // serializes types, that "JSON.stringify()" doesn't properly handle
-    /*private static serialize(value: any): any | void {
-        // todo: handle other builtins
-        if (['string', 'number'].includes(typeof value)) {
-            return value
-        } else if (typeof value === 'function') {
-            return value.toString()
-        } else if (Array.isArray(value)) {
-            return value.map(serialize)
-        } else if (value.constructor === {}.constructor) {
-            return Object.fromEntries(
-                Array.from(
-                    Object.entries(value)
-                        .map(([key, value]) =>
-                            [key, this.serialize(value)]
-                        )
-                )
-            )
-        } else {
-            if (!value.stringify && !value.serialize)
-                throw new Error(
-                    `Class: \`${value.constructor.name}\` must have methods to serialize and deserialize objects. (\`.stringify()\`, \`.serialize()\`)`
-                )
-            // return value.toString()
-        }
-    }*/
+    /**
+     * Serializes types that "JSON.stringify()" doesn't properly handle
+     */
+    public static serialize(value: any): any | void {
+        return serialize(value)
+    }
+
+    public static deserialize(value: string | number | Array<any> | { $$iposType?: string, data: any }): any | void {
+        return deserialize(value)
+    }
 }
