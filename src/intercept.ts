@@ -2,7 +2,7 @@ import InterceptedArray from './intercept/array.js'
 
 export default function intercept(value: object, interceptCallback: (object: object, method: string, ...args: any) => void): object {
     if (Array.isArray(value)) {
-        value = new InterceptedArray(interceptCallback)
+        value = InterceptedArray.new(value, interceptCallback)
     }
     /*Object.getOwnPropertyNames(Object.getPrototypeOf(value))
         .filter(methodName => !(methodName.startsWith('__') && methodName.endsWith('__')))

@@ -45,8 +45,13 @@ export default class IPOS {
         return this.fields.get(key)
     }
 
-    // todo: also accept and update non object values
+    // todo: also accept and update non-object values
     public create(key: string, value: object): void {
+        this.createStealthy(key, value)
+        // todo: send update message
+    }
+
+    protected createStealthy(key: string, value: object): void {
         // console.log('create', key)
         if (typeof value === 'object')
             value = intercept(value, (object, method, ...args) =>
@@ -63,19 +68,22 @@ export default class IPOS {
         // todo: send update message
     }
 
-    public addProcess(process: ChildProcess) {
+    public addProcess(process: ChildProcess): Promise<void> {
         if (!process.send)
             throw new Error(`Process must have an ipc channel. Activate by passing "stdio: [<stdin>, <stdout>, <stderr>, 'ipc']" as an option.`)
         const messaging = new IPOSMessaging(process)
 
-        let registered = false
+        let registered = false, resolve: Function
+        const promise: Promise<void> = new Promise(res => resolve = res)
         messaging.listenForType('register', () => {
             if (registered) return
             registered = true
 
             this.processMessagingMap.set(process, messaging)
             this.syncProcess(process)
+            resolve()
         })
+        return promise
     }
 
     private syncProcess(process: ChildProcess) {

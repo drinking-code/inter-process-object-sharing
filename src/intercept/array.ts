@@ -7,6 +7,15 @@ export default class InterceptedArray<T> extends Array {
         this.callback = callback
     }
 
+    static new<T>(arrayLike: ArrayLike<T>, callback: (object: object, method: string, ...args: any) => void): InterceptedArray<T> {
+        const interceptedArray: InterceptedArray<T> =
+            new InterceptedArray(callback)
+        for (let i = 0; i < arrayLike.length; i++) {
+            interceptedArray[i] = arrayLike[i]
+        }
+        return interceptedArray
+    }
+
     copyWithin(target: number, start: number, end?: number): this {
         this.callback(this, 'copyWithin', target, start, end)
         return super.copyWithin(target, start, end)

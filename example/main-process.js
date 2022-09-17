@@ -9,7 +9,7 @@ const subProcess = child_process.spawn('node', ['sub-process.js'], {
     stdio: ['inherit', 'inherit', 'inherit', 'ipc']
 })
 
-sharedObject.addProcess(subProcess)
+await sharedObject.addProcess(subProcess)
 sharedObject.create('exampleObject', {})
 sharedObject.exampleObject.from = 'the other side'
 
