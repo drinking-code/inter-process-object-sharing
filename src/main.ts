@@ -63,7 +63,7 @@ export default class IPOS {
         messaging.listenForType('delete', (message) => this.performDelete(message))
     }
 
-    protected sendToAll(type: iposMessagingType, data?: {}) {
+    private sendToAll(type: iposMessagingType, data?: {}) {
         this.messaging?.send(type, data)
         this.processMessagingMap.forEach(processMessaging => {
             processMessaging.send(type, data)
@@ -100,13 +100,13 @@ export default class IPOS {
         this.fieldsReverseMap.set(value, key)
     }
 
-    protected performSet(message: iposMessagingMessage) {
+    private performSet(message: iposMessagingMessage) {
         if (!message.key || !message.value) return
         this.createStealthy(message.key, message.value)
     }
 
     /******************** UPDATE ********************/
-    protected performUpdate(message: iposMessagingMessage) {
+    private performUpdate(message: iposMessagingMessage) {
         if (!message.do || !message.on) return
         if (message.do === '$$iposDefine') {
             if (!message.with) return
@@ -130,11 +130,11 @@ export default class IPOS {
         return this.deleteStealthy(key)
     }
 
-    public deleteStealthy(key: string): boolean {
+    private deleteStealthy(key: string): boolean {
         return this.fields.delete(key)
     }
 
-    public performDelete(message: iposMessagingMessage) {
+    private performDelete(message: iposMessagingMessage) {
         if (!message.key) return
         return this.deleteStealthy(message.key)
     }
