@@ -1,15 +1,21 @@
 import {ChildProcess} from 'child_process'
+import {deserialize, serialize} from './serialize.js'
 
-type iposMessagingType = 'ready' | 'register' | 'update' | 'sync'
+export type iposMessagingType = 'ready' | 'register' | 'update' | 'sync' | 'sync_ok' | 'set' | 'delete'
 type iposMessagingCallback = (message: iposMessagingMessage) => (any | void)
-type iposMessagingMessage = {
+export type iposMessagingMessage = {
     protocol: 'ipos',
     type: iposMessagingType,
+
     fields?: string,
+
     do?: string,
     on?: string,
     with?: Array<any>,
-}
+
+    key?: string,
+    value: any,
+} & { [k: string]: string }
 
 const mustHaveSendError = new Error(`Process must have a \`.send()\` method.`)
 
@@ -29,6 +35,11 @@ export default class IPOSMessaging {
                 if (message.type === 'ready') {
                     this.send('register')
                     return
+                }
+
+                for (const property in message) {
+                    if (!message.hasOwnProperty(property)) continue
+                    message[property] = deserialize(message[property])
                 }
 
                 if (this.listeners.has('any')) {
@@ -56,13 +67,26 @@ export default class IPOSMessaging {
         this.process.send({
             protocol: 'ipos',
             type,
-            ...data
+            ...(Object.fromEntries(
+                Object.entries(data ?? {})
+                    .map(([key, value]) => [key, serialize(value)])
+            ))
         })
     }
 
     listenForType(type: iposMessagingType | 'any', callback: iposMessagingCallback) {
         let callbacks: Array<iposMessagingCallback> = this.listeners.get(type) ?? []
         callbacks.push(callback)
+        this.listeners.set(type, callbacks)
+    }
+
+    listenOnceForType(type: iposMessagingType | 'any', callback: iposMessagingCallback) {
+        let callbacks: Array<iposMessagingCallback> = this.listeners.get(type) ?? []
+        const onceCallback = (message: iposMessagingMessage) => {
+            delete callbacks[callbacks.indexOf(onceCallback)]
+            callback(message)
+        }
+        callbacks.push(onceCallback)
         this.listeners.set(type, callbacks)
     }
 

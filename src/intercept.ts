@@ -1,20 +1,29 @@
-import InterceptedArray from './intercept/array.js'
-
 export default function intercept(value: object, interceptCallback: (object: object, method: string, ...args: any) => void): object {
-    if (Array.isArray(value)) {
-        value = InterceptedArray.new(value, interceptCallback)
-    }
-    /*Object.getOwnPropertyNames(Object.getPrototypeOf(value))
-        .filter(methodName => !(methodName.startsWith('__') && methodName.endsWith('__')))
-        .forEach(methodName => {
-            if (!value[methodName]) return
-            const method = value[methodName]
-            value[methodName] = function (...args: any) {
-                // interception
-                console.log(methodName)
-                method.call(value, ...args)
+    const arrayMutatingMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']
+    const objectMutatingMethods: string[] = []
+    const mapMutatingMethods = ['clear', 'delete', 'set']
+    const setMutatingMethods = ['add', 'clear', 'delete']
+    const functionMutatingMethods: string[] = []
+    const mutatingMethods = new Map()
+    mutatingMethods.set(Array, arrayMutatingMethods)
+    mutatingMethods.set({}.constructor, objectMutatingMethods)
+    mutatingMethods.set(Map, mapMutatingMethods)
+    mutatingMethods.set(Set, setMutatingMethods)
+    mutatingMethods.set(Function, functionMutatingMethods)
+
+    if (!mutatingMethods.has(value.constructor))
+        return value
+    return new Proxy(value, {
+        get(target, name: string) {
+            if (Reflect.has(target, name) && mutatingMethods.get(value.constructor).includes(name)) {
+                const method = Reflect.get(target, name)
+                return (...args: any) => {
+                    interceptCallback(value, name, ...args)
+                    method.call(value, ...args)
+                }
+            } else {
+                return Reflect.get(target, name)
             }
-        })
-    */
-    return value
+        }
+    })
 }

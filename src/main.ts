@@ -1,7 +1,6 @@
 import {ChildProcess} from 'child_process'
 import initChild from './init-child.js'
-import IPOSMessaging from './messaging.js'
-import {deserialize, serialize} from './serialize.js'
+import IPOSMessaging, {iposMessagingMessage, iposMessagingType} from './messaging.js'
 import intercept from './intercept.js'
 
 export default class IPOS {
@@ -28,6 +27,10 @@ export default class IPOS {
         this.fieldsReverseMap = new Map()
         this.processMessagingMap = new Map()
 
+        if (process.send) {
+            this.messaging = new IPOSMessaging(process)
+        }
+
         // proxy makes all "target.fields" available as "actual" fields
         this.proxy = new Proxy(this, {
             get(target, name: string) {
@@ -36,23 +39,46 @@ export default class IPOS {
                 } else if (target.fields.has(name)) {
                     return target.fields.get(name)
                 }
-            }
+            },
+            set(target, name: string, value: any): boolean {
+                if (Reflect.has(target, name)) {
+                    throw Error(`Cannot change inherent property \`${name}\``)
+                } else if (!target.fields.has(name)) {
+                    throw Error(`Cannot set unknown field \`${name}\`. Initialise a field with \`.create()\``)
+                } else {
+                    target.create(name, value)
+                    return true
+                }
+            },
         })
         return this.proxy
     }
 
+    protected mountListeners(messaging: IPOSMessaging) {
+        messaging.listenForType('update', (message) => this.performUpdate(message))
+        messaging.listenForType('set', (message) => this.performSet(message))
+        messaging.listenForType('delete', (message) => this.performDelete(message))
+    }
+
+    protected sendToAll(type: iposMessagingType, data?: {}) {
+        this.messaging?.send(type, data)
+        this.processMessagingMap.forEach(processMessaging => {
+            processMessaging.send(type, data)
+        })
+    }
+
+    /********************* GET **********************/
     public get(key: string): any {
         return this.fields.get(key)
     }
 
-    // todo: also accept and update non-object values
-    public create(key: string, value: object): void {
+    /******************** CREATE ********************/
+    public create(key: string, value: any): void {
         this.createStealthy(key, value)
-        // todo: send update message
+        this.sendToAll('set', {key, value})
     }
 
     protected createStealthy(key: string, value: object): void {
-        // console.log('create', key)
         if (typeof value === 'object')
             value = intercept(value, (object, method, ...args) =>
                 this.sendMethodCall(object, method, ...args)
@@ -60,14 +86,43 @@ export default class IPOS {
 
         this.fields.set(key, value)
         this.fieldsReverseMap.set(value, key)
-        // todo: send update message
     }
 
+    protected performSet(message: iposMessagingMessage) {
+        if (!message.key || !message.value) return
+        this.createStealthy(message.key, message.value)
+    }
+
+    /******************** UPDATE ********************/
+    protected performUpdate(message: iposMessagingMessage) {
+        if (!message.do || !message.on) return
+        this.get(message.on)[message.do](...(message.with ?? []))
+    }
+
+    private sendMethodCall(object: object, method: string, ...args: any) {
+        this.sendToAll('update', {
+            do: method,
+            on: this.fieldsReverseMap.get(object),
+            with: Array.from(args)
+        })
+    }
+
+    /******************** DELETE ********************/
     public delete(key: string): boolean {
-        return this.fields.delete(key)
-        // todo: send update message
+        this.sendToAll('delete', {key})
+        return this.deleteStealthy(key)
     }
 
+    public deleteStealthy(key: string): boolean {
+        return this.fields.delete(key)
+    }
+
+    public performDelete(message: iposMessagingMessage) {
+        if (!message.key) return
+        return this.deleteStealthy(message.key)
+    }
+
+    /******************* PROCESS ********************/
     public addProcess(process: ChildProcess): Promise<void> {
         if (!process.send)
             throw new Error(`Process must have an ipc channel. Activate by passing "stdio: [<stdin>, <stdout>, <stderr>, 'ipc']" as an option.`)
@@ -79,37 +134,23 @@ export default class IPOS {
             if (registered) return
             registered = true
 
+            this.mountListeners(messaging)
             this.processMessagingMap.set(process, messaging)
             this.syncProcess(process)
-            resolve()
+                .then(() =>
+                    resolve()
+                )
         })
         return promise
     }
 
-    private syncProcess(process: ChildProcess) {
-        this.processMessagingMap.get(process)?.send('sync', {
-            fields: JSON.stringify(IPOS.serialize(this.fields))
+    private syncProcess(process: ChildProcess): Promise<void> {
+        let resolve: Function
+        const promise: Promise<void> = new Promise(res => resolve = res)
+        this.processMessagingMap.get(process)?.send('sync', {fields: this.fields})
+        this.processMessagingMap.get(process)?.listenOnceForType('sync_ok', () => {
+            resolve()
         })
-    }
-
-    private sendMethodCall(object: object, method: string, ...args: any) {
-        this.processMessagingMap.forEach(processMessaging => {
-            processMessaging.send('update', {
-                do: method,
-                on: this.fieldsReverseMap.get(object),
-                with: serialize(args)
-            })
-        })
-    }
-
-    /**
-     * Serializes types that "JSON.stringify()" doesn't properly handle
-     */
-    public static serialize(value: any): any | void {
-        return serialize(value)
-    }
-
-    public static deserialize(value: string | number | Array<any> | { $$iposType?: string, data: any }): any | void {
-        return deserialize(value)
+        return promise
     }
 }

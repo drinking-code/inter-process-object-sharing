@@ -8,20 +8,20 @@ export function serialize(value: any): any | void {
             data: value.toString()
         }
     } else if (Array.isArray(value)) {
-        return value.map(serialize)
+        return value.map(v => serialize(v))
     } else if (value.constructor === {}.constructor) {
         return Object.fromEntries(
             Array.from(
                 Object.entries(value)
-                    .map(([key, value]) =>
-                        [key, serialize(value)]
-                    )
+                    .map(([key, value]) => [key, serialize(value)])
             )
         )
     } else if (value.constructor === Map) {
         return {
             $$iposType: 'Map',
-            data: Array.from(value.entries()).map(serialize)
+            data: Array.from(value.entries()).map(([key, value]) =>
+                [key, serialize(value)]
+            )
         }
     } else {
         if (!value.stringify && !value.serialize)
