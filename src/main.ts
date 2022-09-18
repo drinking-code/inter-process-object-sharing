@@ -56,6 +56,7 @@ export default class IPOS {
         return this.proxy
     }
 
+    /****************** MESSAGING *******************/
     protected mountListeners(messaging: IPOSMessaging) {
         messaging.listenForType('update', (message) => this.performUpdate(message))
         messaging.listenForType('set', (message) => this.performSet(message))
@@ -68,6 +69,10 @@ export default class IPOS {
             processMessaging.send(type, data)
         })
     }
+
+    /*public getNonIPOSMessages(process: ChildProcess, handler: (message: any) => any) {
+        this.processMessagingMap.get(process)?.getNonIPOSMessages(handler)
+    }*/
 
     /********************* GET **********************/
     public get(key: string): any {

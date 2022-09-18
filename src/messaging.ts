@@ -21,16 +21,19 @@ const mustHaveSendError = new Error(`Process must have a \`.send()\` method.`)
 
 export default class IPOSMessaging {
     private listeners: Map<iposMessagingType | 'any', Array<iposMessagingCallback>>
+    private nonIPOSListeners: Set<(message: any) => any>
     private process: ChildProcess | NodeJS.Process
 
     constructor(process: ChildProcess | NodeJS.Process) {
         this.listeners = new Map()
+        this.nonIPOSListeners = new Set()
         if (!process.send) throw mustHaveSendError
         this.process = process
         this.process.on('message', (message: iposMessagingMessage) => {
             try {
                 if (message.protocol !== 'ipos')
-                    return
+                    // not a message from ipos
+                    return this.nonIPOSListeners.forEach(callback => callback(message))
 
                 if (message.type === 'ready') {
                     this.send('register')
@@ -52,6 +55,7 @@ export default class IPOSMessaging {
                 }
             } catch (e) {
                 // not a message from ipos
+                this.nonIPOSListeners.forEach(callback => callback(message))
             }
         })
 
@@ -61,6 +65,10 @@ export default class IPOSMessaging {
             this.send('ready')
         }
     }
+
+    /*getNonIPOSMessages(handler: (message: any) => any) {
+        this.nonIPOSListeners.add(handler)
+    }*/
 
     send(type: iposMessagingType, data?: {}) {
         if (!this.process.send) throw mustHaveSendError
