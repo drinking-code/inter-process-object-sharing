@@ -1,7 +1,7 @@
 import IPOS from '../lib/main.js'
 
 const sharedObject = await IPOS.new()
-console.log('sharedObject.exampleArray', sharedObject.exampleArray)
+// wait for the main process to set the values for "exampleObject"
 setTimeout(() =>
-        console.log(sharedObject.exampleArray[0], /*...*/sharedObject.exampleObject/*.entries()*/),
+        console.log(sharedObject.exampleArray[0], ...Object.entries(sharedObject.exampleObject)[0]),
     10)

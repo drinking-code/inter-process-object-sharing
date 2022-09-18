@@ -12,5 +12,3 @@ const subProcess = child_process.spawn('node', ['sub-process.js'], {
 await sharedObject.addProcess(subProcess)
 sharedObject.create('exampleObject', {})
 sharedObject.exampleObject.from = 'the other side'
-
-console.log(sharedObject.exampleArray, sharedObject.exampleObject)

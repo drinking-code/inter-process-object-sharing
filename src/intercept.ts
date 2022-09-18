@@ -1,4 +1,4 @@
-export default function intercept(value: object, interceptCallback: (object: object, method: string, ...args: any) => void): object {
+export default function intercept(value: object, key: string, interceptCallback: (key: string, method: string, ...args: any) => void): object {
     const arrayMutatingMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']
     const objectMutatingMethods: string[] = []
     const mapMutatingMethods = ['clear', 'delete', 'set']
@@ -18,12 +18,18 @@ export default function intercept(value: object, interceptCallback: (object: obj
             if (Reflect.has(target, name) && mutatingMethods.get(value.constructor).includes(name)) {
                 const method = Reflect.get(target, name)
                 return (...args: any) => {
-                    interceptCallback(value, name, ...args)
+                    interceptCallback(key, name, ...args)
                     method.call(value, ...args)
                 }
             } else {
                 return Reflect.get(target, name)
             }
-        }
+        },
+        set(target, name: string, value: any): boolean {
+            // @ts-ignore
+            const result = (target[name] = value)
+            interceptCallback(key, '$$iposDefine', name, value)
+            return !!result
+        },
     })
 }

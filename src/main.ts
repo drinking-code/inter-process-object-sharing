@@ -4,8 +4,9 @@ import IPOSMessaging, {iposMessagingMessage, iposMessagingType} from './messagin
 import intercept from './intercept.js'
 
 export default class IPOS {
-    private readonly fields: Map<string, object>
-    private fieldsReverseMap: Map<object, string>
+    private readonly fields: Map<string, ProxyHandler<any>>
+    private readonly fieldsRaw: Map<string, any>
+    private fieldsReverseMap: Map<ProxyHandler<any>, string>
     private processMessagingMap: Map<ChildProcess, IPOSMessaging>
     private readonly proxy
     protected messaging?: IPOSMessaging
@@ -24,6 +25,7 @@ export default class IPOS {
 
     constructor() {
         this.fields = new Map()
+        this.fieldsRaw = new Map()
         this.fieldsReverseMap = new Map()
         this.processMessagingMap = new Map()
 
@@ -72,6 +74,10 @@ export default class IPOS {
         return this.fields.get(key)
     }
 
+    private getRaw(key: string): any {
+        return this.fields.get(key)
+    }
+
     /******************** CREATE ********************/
     public create(key: string, value: any): void {
         this.createStealthy(key, value)
@@ -79,9 +85,10 @@ export default class IPOS {
     }
 
     protected createStealthy(key: string, value: object): void {
+        this.fieldsRaw.set(key, value)
         if (typeof value === 'object')
-            value = intercept(value, (object, method, ...args) =>
-                this.sendMethodCall(object, method, ...args)
+            value = intercept(value, key, (key, method, ...args) =>
+                this.sendMethodCall(key, method, ...args)
             )
 
         this.fields.set(key, value)
@@ -96,13 +103,18 @@ export default class IPOS {
     /******************** UPDATE ********************/
     protected performUpdate(message: iposMessagingMessage) {
         if (!message.do || !message.on) return
-        this.get(message.on)[message.do](...(message.with ?? []))
+        if (message.do === '$$iposDefine') {
+            if (!message.with) return
+            this.fieldsRaw.get(message.on)[message.with[0]] = message.with[1]
+        } else {
+            this.fieldsRaw.get(message.on)[message.do](...(message.with ?? []))
+        }
     }
 
-    private sendMethodCall(object: object, method: string, ...args: any) {
+    private sendMethodCall(key: string, method: string, ...args: any) {
         this.sendToAll('update', {
             do: method,
-            on: this.fieldsReverseMap.get(object),
+            on: key,
             with: Array.from(args)
         })
     }

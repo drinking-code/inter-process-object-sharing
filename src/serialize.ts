@@ -1,6 +1,6 @@
 export function serialize(value: any): any | void {
     // todo: handle other builtins
-    if (['string', 'number'].includes(typeof value)) {
+    if (['string', 'number', 'boolean'].includes(typeof value) || !value) {
         return value
     } else if (typeof value === 'function') {
         return {
