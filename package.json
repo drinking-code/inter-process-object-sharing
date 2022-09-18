@@ -2,7 +2,7 @@
   "name": "inter-process-object-sharing",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/main.js",
   "type": "module",
   "scripts": {
     "build" : "tsc",
