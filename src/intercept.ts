@@ -22,13 +22,18 @@ export default function intercept(value: object, key: string, interceptCallback:
                     method.call(value, ...args)
                 }
             } else {
-                return Reflect.get(target, name)
+                let value = Reflect.get(target, name)
+                if (typeof value === 'function')
+                    value = value.bind(target)
+                return value
             }
         },
         set(target, name: string, value: any): boolean {
             // @ts-ignore
             const result = (target[name] = value)
-            interceptCallback(key, '$$iposDefine', name, value)
+            if (!!result) {
+                interceptCallback(key, '$$iposDefine', name, value)
+            }
             return !!result
         },
     })

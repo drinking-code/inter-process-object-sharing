@@ -92,9 +92,7 @@ export default class IPOS {
     protected createStealthy(key: string, value: object): void {
         this.fieldsRaw.set(key, value)
         if (typeof value === 'object')
-            value = intercept(value, key, (key, method, ...args) =>
-                this.sendMethodCall(key, method, ...args)
-            )
+            value = intercept(value, key, this.sendMethodCall.bind(this))
 
         this.fields.set(key, value)
         this.fieldsReverseMap.set(value, key)
