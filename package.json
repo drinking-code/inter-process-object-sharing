@@ -1,12 +1,13 @@
 {
   "name": "ipos",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "lib/main.js",
   "type": "module",
   "scripts": {
     "build" : "tsc",
-    "watch" : "tsc --watch"
+    "watch" : "tsc --watch",
+    "prepack": "npm run build"
   },
   "keywords": [],
   "author": "",
