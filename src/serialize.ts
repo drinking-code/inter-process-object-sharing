@@ -17,7 +17,7 @@ export function serialize(value: any): any | void {
     } else if (value instanceof Map) {
         return {
             $$iposType: 'Map',
-            data: Object.fromEntries(
+            data: new Map(
                 Array.from(value.entries())
                     .map(([key, value]) => [key, serialize(value)])
             )

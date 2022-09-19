@@ -5,8 +5,8 @@ export default function initChild(this: IPOS) {
     const promise = new Promise(res => resolve = res)
 
     this.messaging?.listenForType('sync', message => {
-        if (!message.fields) return
-        Object.entries(message.fields)
+        if (!message.fields || !(message.fields instanceof Map)) return
+        Array.from(message.fields.entries())
             .map(([key, value]: [string, any]) => {
                 this.createStealthy(key, value)
             })
@@ -17,7 +17,7 @@ export default function initChild(this: IPOS) {
     this.messaging?.send('register')
 
     if (this.messaging)
-    this.mountListeners(this.messaging)
+        this.mountListeners(this.messaging)
 
     return promise
 }

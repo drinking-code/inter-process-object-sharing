@@ -7,14 +7,14 @@ export type iposMessagingMessage = {
     protocol: 'ipos',
     type: iposMessagingType,
 
-    fields?: string,
+    fields?: string | Map<string, any>, // serialised, de-serialised
 
     do?: string,
     on?: string,
-    with?: Array<any>,
+    with?: Array<string> | Array<any>,
 
     key?: string,
-    value: any,
+    value: string | any,
 } & { [k: string]: string }
 
 const mustHaveSendError = new Error(`Process must have a \`.send()\` method.`)
