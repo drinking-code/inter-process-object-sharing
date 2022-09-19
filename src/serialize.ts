@@ -11,16 +11,15 @@ export function serialize(value: any): any | void {
         return value.map(v => serialize(v))
     } else if (value.constructor === {}.constructor) {
         return Object.fromEntries(
-            Array.from(
-                Object.entries(value)
-                    .map(([key, value]) => [key, serialize(value)])
-            )
+            Array.from(Object.entries(value))
+                .map(([key, value]) => [key, serialize(value)])
         )
-    } else if (value.constructor === Map) {
+    } else if (value instanceof Map) {
         return {
             $$iposType: 'Map',
-            data: Array.from(value.entries()).map(([key, value]) =>
-                [key, serialize(value)]
+            data: Object.fromEntries(
+                Array.from(value.entries())
+                    .map(([key, value]) => [key, serialize(value)])
             )
         }
     } else {
@@ -51,7 +50,10 @@ export function deserialize(value: string | number | Array<any> | { $$iposType?:
             // todo: is this acceptable?
             return eval(`(${value.data})`)
         } else if (value.$$iposType === 'Map') {
-            return Object.fromEntries(value.data.map(deserialize))
+            return Object.fromEntries(
+                Array.from(Object.entries(value.data))
+                    .map(deserialize)
+            )
         }
     } else
         console.warn('I don\'t know', value)
