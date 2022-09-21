@@ -17,10 +17,10 @@
     "object-sharing"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf lib && tsc",
     "watch": "tsc --watch",
     "prepack": "npm run build",
-    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest --verbose"
   },
   "devDependencies": {
     "@types/jest": "^29.0.3",

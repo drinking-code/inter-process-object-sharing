@@ -58,12 +58,6 @@ export default class IPOSMessaging {
                 this.nonIPOSListeners.forEach(callback => callback(message))
             }
         })
-
-        // if the current process is a parent process
-        if (process instanceof ChildProcess) {
-            // send a "ready" message to receive another "register" (if an instance is initiated)
-            this.send('ready')
-        }
     }
 
     /*getNonIPOSMessages(handler: (message: any) => any) {

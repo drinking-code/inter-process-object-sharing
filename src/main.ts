@@ -10,6 +10,7 @@ export default class IPOS {
     private processMessagingMap: Map<ChildProcess, IPOSMessaging>
     private readonly proxy
     protected messaging?: IPOSMessaging
+    [field: string]: unknown;
 
     static new(): IPOS | Promise<IPOS> {
         const ipos = new IPOS()
@@ -156,16 +157,18 @@ export default class IPOS {
                     resolve()
                 )
         })
+        // send a "ready" message to receive another "register" (if an instance is initiated)
+        messaging.send('ready')
         return promise
     }
 
     private syncProcess(process: ChildProcess): Promise<void> {
         let resolve: Function
         const promise: Promise<void> = new Promise(res => resolve = res)
-        this.processMessagingMap.get(process)?.send('sync', {fields: this.fields})
         this.processMessagingMap.get(process)?.listenOnceForType('sync_ok', () => {
             resolve()
         })
+        this.processMessagingMap.get(process)?.send('sync', {fields: this.fields})
         return promise
     }
 }

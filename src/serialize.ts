@@ -17,7 +17,7 @@ export function serialize(value: any): any | void {
     } else if (value instanceof Map) {
         return {
             $$iposType: 'Map',
-            data: new Map(
+            data: Object.fromEntries(
                 Array.from(value.entries())
                     .map(([key, value]) => [key, serialize(value)])
             )
@@ -50,7 +50,7 @@ export function deserialize(value: string | number | Array<any> | { $$iposType?:
             // todo: is this acceptable?
             return eval(`(${value.data})`)
         } else if (value.$$iposType === 'Map') {
-            return Object.fromEntries(
+            return new Map(
                 Array.from(Object.entries(value.data))
                     .map(deserialize)
             )

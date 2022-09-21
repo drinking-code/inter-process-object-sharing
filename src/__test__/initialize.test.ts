@@ -1,18 +1,12 @@
 import IPOS from '../main'
 import subProcessIPCLoopback from './subProcessIPCLoopback'
-
-function withoutProcessSend(callback: Function) {
-    const processSend = process.send
-    process.send = undefined
-    callback()
-    process.send = processSend
-}
+import {withoutProcessSend, withoutProcessSendSync} from './withoutProcessSendSync'
 
 describe('Initialising IPOS', () => {
     it('Create new instance in a main process', () => {
         // this is a subprocess anyway
         // just simulate main process by setting process.send to undefined (jamming the subprocess detection)
-        withoutProcessSend(() => {
+        withoutProcessSendSync(() => {
             let ipos
             expect(() => ipos = IPOS.new()).not.toThrow()
             expect(ipos).toBeInstanceOf(IPOS)
@@ -36,21 +30,32 @@ describe('Initialising IPOS', () => {
 
     it('Connect subprocess after it has initialised', async () => {
         const sub_process = new subProcessIPCLoopback()
-        const sub_ipos = IPOS.new()
-        withoutProcessSend(() => {
-            const main_ipos = IPOS.new() as IPOS
-            let addProcessPromise
-            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
-            expect(() => addProcessPromise = main_ipos.addProcess(sub_process)).not.toThrow()
-            expect(addProcessPromise).toBeInstanceOf(Promise)
+        let sub_ipos: Promise<IPOS> = IPOS.new() as Promise<IPOS>,
+            main_ipos: IPOS
+
+        withoutProcessSendSync(() => {
+            main_ipos = IPOS.new() as IPOS
         })
-        expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
+
+        let addProcessPromise
+        expect(() =>
+            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
+            addProcessPromise = main_ipos.addProcess(sub_process)
+        ).not.toThrow()
+
+        expect(addProcessPromise).toBeInstanceOf(Promise)
+        expect(sub_ipos).toBeInstanceOf(Promise)
+
+        await Promise.all([
+            expect(addProcessPromise).resolves,
+            await expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
+        ])
         sub_process.destroy()
     })
 
-    it('Connect subprocess before it has initialised', async () => {
+    /*it('Connect subprocess before it has initialised', async () => {
         const sub_process = new subProcessIPCLoopback()
-        withoutProcessSend(() => {
+        withoutProcessSendSync(() => {
             const main_ipos = IPOS.new() as IPOS
             let addProcessPromise
             // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
@@ -60,5 +65,5 @@ describe('Initialising IPOS', () => {
         const sub_ipos = IPOS.new()
         expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
         sub_process.destroy()
-    })
+    })*/
 })
