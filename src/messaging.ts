@@ -69,10 +69,7 @@ export default class IPOSMessaging {
         this.process.send({
             protocol: 'ipos',
             type,
-            ...(Object.fromEntries(
-                Object.entries(data ?? {})
-                    .map(([key, value]) => [key, serialize(value)])
-            ))
+            ...serialize(data)
         })
     }
 

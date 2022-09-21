@@ -9,7 +9,7 @@ export function serialize(value: any): any | void {
         }
     } else if (Array.isArray(value)) {
         return value.map(v => serialize(v))
-    } else if (value.constructor === {}.constructor) {
+    } else if (value.constructor === {}.constructor || value.valueOf().constructor === {}.constructor) {
         return Object.fromEntries(
             Array.from(Object.entries(value))
                 .map(([key, value]) => [key, serialize(value)])
