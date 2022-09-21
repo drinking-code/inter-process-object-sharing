@@ -30,9 +30,9 @@ describe('Initialising IPOS', () => {
 
     it('Connect subprocess after it has initialised', async () => {
         const sub_process = new subProcessIPCLoopback()
-        let sub_ipos: Promise<IPOS> = IPOS.new() as Promise<IPOS>,
-            main_ipos: IPOS
 
+        const sub_ipos: Promise<IPOS> = IPOS.new() as Promise<IPOS>
+        let main_ipos: IPOS
         withoutProcessSendSync(() => {
             main_ipos = IPOS.new() as IPOS
         })
@@ -48,22 +48,36 @@ describe('Initialising IPOS', () => {
 
         await Promise.all([
             expect(addProcessPromise).resolves,
-            await expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
+            expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
         ])
+
         sub_process.destroy()
     })
 
-    /*it('Connect subprocess before it has initialised', async () => {
+    it('Connect subprocess before it has initialised', async () => {
         const sub_process = new subProcessIPCLoopback()
+
+        let main_ipos: IPOS
         withoutProcessSendSync(() => {
-            const main_ipos = IPOS.new() as IPOS
-            let addProcessPromise
-            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
-            expect(() => addProcessPromise = main_ipos.addProcess(sub_process)).not.toThrow()
-            expect(addProcessPromise).toBeInstanceOf(Promise)
+            main_ipos = IPOS.new() as IPOS
         })
+
+        let addProcessPromise
+        expect(() =>
+            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
+            addProcessPromise = main_ipos.addProcess(sub_process)
+        ).not.toThrow()
+
         const sub_ipos = IPOS.new()
-        expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
+
+        expect(addProcessPromise).toBeInstanceOf(Promise)
+        expect(sub_ipos).toBeInstanceOf(Promise)
+
+        await Promise.all([
+            expect(addProcessPromise).resolves,
+            expect(sub_ipos).resolves.toBeInstanceOf(IPOS)
+        ])
+
         sub_process.destroy()
-    })*/
+    })
 })
