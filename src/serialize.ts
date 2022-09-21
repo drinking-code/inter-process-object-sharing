@@ -14,6 +14,12 @@ export function serialize(value: any): any | void {
             Array.from(Object.entries(value))
                 .map(([key, value]) => [key, serialize(value)])
         )
+    } else if (value instanceof Set) {
+        return {
+            $$iposType: 'Set',
+            data: Array.from(value.entries())
+                .map(([v]) => serialize(v))
+        }
     } else if (value instanceof Map) {
         return {
             $$iposType: 'Map',
@@ -49,6 +55,10 @@ export function deserialize(value: string | number | Array<any> | { $$iposType?:
         } else if (value.$$iposType === 'Function') {
             // todo: is this acceptable?
             return eval(`(${value.data})`)
+        } else if (value.$$iposType === 'Set') {
+            return new Set(
+                value.data.map(deserialize)
+            )
         } else if (value.$$iposType === 'Map') {
             return new Map(
                 Array.from(Object.entries(value.data))
