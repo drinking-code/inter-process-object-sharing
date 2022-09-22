@@ -4,12 +4,13 @@ import IPOSMessaging, {iposMessagingMessage, iposMessagingType} from './messagin
 import intercept from './intercept.js'
 
 export default class IPOS {
-    private readonly fields: Map<string, ProxyHandler<any>>
+    private readonly fields: Map<string, any>
     private readonly fieldsRaw: Map<string, any>
-    private fieldsReverseMap: Map<ProxyHandler<any>, string>
+    private fieldsReverseMap: Map<any, string>
     private processMessagingMap: Map<ChildProcess, IPOSMessaging>
     private readonly proxy
     protected messaging?: IPOSMessaging
+
     [field: string]: unknown;
 
     static new(): IPOS | Promise<IPOS> {

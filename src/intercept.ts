@@ -1,4 +1,4 @@
-export default function intercept(value: object, key: string, interceptCallback: (key: string, method: string, ...args: any) => void): object {
+export default function intercept<V>(value: V, key: string, interceptCallback: (key: string, method: string, ...args: any) => void): V {
     const arrayMutatingMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']
     const objectMutatingMethods: string[] = []
     const mapMutatingMethods = ['clear', 'delete', 'set']
@@ -11,8 +11,9 @@ export default function intercept(value: object, key: string, interceptCallback:
     mutatingMethods.set(Set, setMutatingMethods)
     mutatingMethods.set(Function, functionMutatingMethods)
 
-    if (!mutatingMethods.has(value.constructor))
+    if (!value || typeof value !== 'object' || !mutatingMethods.has(value.constructor))
         return value
+
     return new Proxy(value, {
         get(target, name: string) {
             if (Reflect.has(target, name) && mutatingMethods.get(value.constructor).includes(name)) {

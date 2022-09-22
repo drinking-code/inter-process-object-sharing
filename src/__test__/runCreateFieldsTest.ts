@@ -3,7 +3,7 @@ import IPOS from '../main'
 import {examples} from './testData'
 
 export default function createFieldsTest(
-    initWith: (setValue: (main_ipos: IPOS) => void, probeValue: (sub_ipos: IPOS) => void) => void,
+    initWith: (setValue: (main_ipos: IPOS, reset?: boolean) => void, probeValue: (sub_ipos: IPOS) => void) => void,
     createLabel: (key: string) => string
 ) {
     function customizer(a: any, b: any) {
@@ -18,8 +18,12 @@ export default function createFieldsTest(
         it(createLabel(exampleKey), async () => {
             const value: unknown = examples[exampleKey]
             await initWith(
-                (main_ipos) => {
-                    main_ipos.create('myField', value)
+                (main_ipos, reset = false) => {
+                    if (!reset) {
+                        main_ipos.create('myField', value)
+                    } else {
+                        main_ipos.myField = value
+                    }
                 },
                 (sub_ipos) => {
                     // lodash equal to compare maps and sets
