@@ -3,7 +3,7 @@ import IPOS from '../main'
 import {examples} from './testData'
 
 export default function createFieldsTest(
-    initWith: (setValue: (main_ipos: IPOS, reset?: boolean) => void, probeValue: (sub_ipos: IPOS) => void) => void,
+    initWith: (setValue: (ipos_for_setting: IPOS, reset?: boolean) => void, probeValue: (ipos_for_probing: IPOS) => void) => void,
     createLabel: (key: string) => string
 ) {
     function customizer(a: any, b: any) {
@@ -18,17 +18,17 @@ export default function createFieldsTest(
         it(createLabel(exampleKey), async () => {
             const value: unknown = examples[exampleKey]
             await initWith(
-                (main_ipos, reset = false) => {
+                (ipos_for_setting, reset = false) => {
                     if (!reset) {
-                        main_ipos.create('myField', value)
+                        ipos_for_setting.create('myField', value)
                     } else {
-                        main_ipos.myField = value
+                        ipos_for_setting.myField = value
                     }
                 },
-                (sub_ipos) => {
+                (ipos_for_probing) => {
                     // lodash equal to compare maps and sets
-                    expect(_.isEqualWith(sub_ipos.myField, value, customizer)).toEqual(true)
-                    expect(_.isEqualWith(sub_ipos.get('myField'), value, customizer)).toEqual(true)
+                    expect(_.isEqualWith(ipos_for_probing.myField, value, customizer)).toEqual(true)
+                    expect(_.isEqualWith(ipos_for_probing.get('myField'), value, customizer)).toEqual(true)
                 }
             )
         })

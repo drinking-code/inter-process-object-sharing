@@ -4,9 +4,9 @@ import subProcessIPCLoopback from './subProcessIPCLoopback'
 import {withoutProcessSendSync} from './withoutProcessSendSync'
 import createFieldsTest from './runCreateFieldsTest'
 
-describe('Synchronisation of fields between processes (transferring existing fields)', () =>
+describe('Synchronising fields', () =>
     createFieldsTest(
-        async (setValue: (main_ipos: IPOS) => void, probeValue: (sub_ipos: IPOS) => void) => {
+        async (setValue: (ipos_for_setting: IPOS) => void, probeValue: (ipos_for_probing: IPOS) => void) => {
             const sub_process = new subProcessIPCLoopback()
             let main_ipos: IPOS, sub_ipos: IPOS
             await withoutProcessSendSync(() => {
