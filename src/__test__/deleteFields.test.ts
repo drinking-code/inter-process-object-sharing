@@ -11,6 +11,7 @@ describe('Deleting fields', () => {
 
         sub_process.destroy()
     })
+
     it('...in the sub process', async () => {
         const {main_ipos, sub_ipos, sub_process} = await createConnectedInstances()
 

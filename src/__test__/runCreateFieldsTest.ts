@@ -2,8 +2,13 @@ import _ from 'lodash'
 import IPOS from '../main'
 import {examples} from './testData'
 
+type ValueOf<T> = T[keyof T]
+
 export default function createFieldsTest(
-    initWith: (setValue: (ipos_for_setting: IPOS, reset?: boolean) => void, probeValue: (ipos_for_probing: IPOS) => void) => void,
+    initWith: (
+        setValue: (ipos_for_setting: IPOS, reset?: boolean) => void,
+        probeValue: (ipos_for_probing: IPOS) => void
+    ) => Promise<void>,
     createLabel: (key: string) => string
 ) {
     function customizer(a: any, b: any) {
@@ -16,7 +21,7 @@ export default function createFieldsTest(
     for (const exampleKey in examples) {
         if (!examples.hasOwnProperty(exampleKey)) continue
         it(createLabel(exampleKey), async () => {
-            const value: unknown = examples[exampleKey]
+            const value: ValueOf<typeof examples> = examples[exampleKey as keyof typeof examples]
             await initWith(
                 (ipos_for_setting, reset = false) => {
                     if (!reset) {
