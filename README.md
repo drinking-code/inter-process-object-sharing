@@ -125,3 +125,19 @@ Deletes the field with the specified key.
 - `key: string` A unique key of an already created field.
 
 **Returns:** `boolean`. `true` if a field existed and has been removed, or `false` if the element does not exist.
+
+# Testing
+
+## Glossary of terms
+
+- **"Synchronise"** a field: _Creating a main instance, then adding a field before connecting to a child instance._ The
+  field will be transmitted along with any other fields that may have been created during the connection process
+  (synchronisation).
+- **"Create"** a field: _Creating a main instance, and connecting it to a child instance, then adding a field._ The
+  field will be transmitted on its own with a "set" message.
+- **"Reset"** a field: _Setting a field with a new value after it has been added and transferred._ The field will be
+  transmitted on its own with a "set" message.
+- **"Update"** a field: _Changing the value of a field after it has been added and transferred._ This is only possible
+  on fields with a value that is not immutable (i.e. objects, arrays, maps, sets, and class instances). The change and
+  not the complete value will be transferred with an "update" message.
+- **"Delete"** a field: _Remove a field._ The deletion will be communicated with a "delete" message.
