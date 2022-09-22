@@ -11,9 +11,6 @@ describe('Creating fields in the main process', () =>
             // @ts-ignore Variable 'main_ipos' is used before being assigned.
             setValue(main_ipos)
 
-            // make sure value is transmitted
-            await new Promise(res => setTimeout(res, 1))
-
             // @ts-ignore Variable 'sub_ipos' is used before being assigned.
             probeValue(sub_ipos)
 
@@ -33,9 +30,6 @@ describe('Creating fields in the subprocess', () =>
 
             // @ts-ignore Variable 'main_ipos' is used before being assigned.
             setValue(sub_ipos)
-
-            // make sure value is transmitted
-            await new Promise(res => setTimeout(res, 1))
 
             // @ts-ignore Variable 'sub_ipos' is used before being assigned.
             probeValue(main_ipos)
