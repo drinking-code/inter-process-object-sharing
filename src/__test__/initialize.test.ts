@@ -1,6 +1,6 @@
 import IPOS from '../main'
 import subProcessIPCLoopback from './subProcessIPCLoopback'
-import {withoutProcessSend, withoutProcessSendSync} from './withoutProcessSendSync'
+import {withoutProcessSendSync} from './withoutProcessSendSync'
 
 describe('Initialising IPOS', () => {
     it('Create new instance in a main process', () => {

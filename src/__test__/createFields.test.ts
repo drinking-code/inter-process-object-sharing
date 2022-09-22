@@ -9,7 +9,6 @@ async function initWith(setValue: (main_ipos: IPOS) => void, probeValue: (sub_ip
     let main_ipos: IPOS, sub_ipos: IPOS
     await withoutProcessSendSync(() => {
         main_ipos = IPOS.new() as IPOS
-        setValue(main_ipos)
     })
 
     await Promise.all([
@@ -18,12 +17,19 @@ async function initWith(setValue: (main_ipos: IPOS) => void, probeValue: (sub_ip
         (async () => sub_ipos = await IPOS.new())()
     ])
 
+    // @ts-ignore Variable 'main_ipos' is used before being assigned.
+    setValue(main_ipos)
+
     // @ts-ignore Variable 'sub_ipos' is used before being assigned.
     probeValue(sub_ipos)
 
     sub_process.destroy()
 }
 
-describe('Synchronisation of fields between processes (transferring existing fields)', () =>
-    createFieldsTest(initWith, (key) => `Synchronise ${key}`)
+describe('Updating fields between processes (transferring newly created fields)', () =>
+    createFieldsTest(initWith, (key) =>
+        ['a', 'e', 'i', 'o', 'u'].some(vowel => key.startsWith(vowel))
+            ? `Create an ${key}`
+            : `Create a ${key}`
+    )
 )
