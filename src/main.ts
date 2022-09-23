@@ -2,6 +2,7 @@ import {ChildProcess} from 'child_process'
 import initChild from './init-child.js'
 import IPOSMessaging, {iposMessagingMessage, iposMessagingType} from './messaging.js'
 import intercept from './intercept.js'
+import {classes, deSerialize, SerializableType, SerializedType} from "./serialize";
 
 export default class IPOS {
     private readonly fields: Map<string, any>
@@ -56,6 +57,15 @@ export default class IPOS {
             },
         })
         return this.proxy
+    }
+
+    static registerClass(
+        constructor: Function,
+        serialize?: (value?: object) => SerializableType,
+        deserialize?: (value: SerializedType) => object
+    ) {
+        classes.set(constructor.name, constructor)
+        deSerialize.set(constructor, {serialize, deserialize})
     }
 
     /****************** MESSAGING *******************/

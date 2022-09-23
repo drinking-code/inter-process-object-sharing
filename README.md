@@ -45,6 +45,61 @@ See [`example/main-process.js`](https://github.com/drinking-code/inter-process-o
 and [`example/sub-process.js`](https://github.com/drinking-code/inter-process-object-sharing/blob/main/example/sub-process.js)
 .
 
+## A note on class instances
+
+To synchronise class instances, you first have to register the class with ipos _on each process_ (on which the class
+instance does not yet exist) before the synchronisation happens. That means if you want to connect two IPOS instances,
+and the instance on the main process has a class instance somewhere inside a field, this class type must be registered
+on the subprocess, before calling `IPOS.new()`. For IPOS to be able to transmit the class instance it has to have
+methods to serialise (turn the class instance into either a string, a number, an object, an array, a map, or a set) and
+deserialize (turn the serialised value back into a class instance). IPOS will look for `.serialize()`, or `.stringify()`
+for serialisation and `.from()` for de-serialisation, but you can specify custom methods / functions. Here is an
+example:
+
+```javascript
+// example-class.js
+
+export class Example {
+    data;
+
+    constructor(data) {
+        this.data = data
+    }
+
+    serialize() {
+        return this.data
+    }
+
+    static from(data) {
+        return new Example(data)
+    }
+}
+```
+
+```javascript
+// main-process.js
+
+import IPOS from 'ipos'
+
+const exampleInstance = new Example('myValue')
+const ipos = IPOS.new()
+ipos.create('myClassInstance', exampleInstance)
+const subProcess = child_process.spawn('node', ['sub-process.js'], {
+    stdio: ['inherit', 'inherit', 'inherit', 'ipc']
+})
+await sharedObject.addProcess(subProcess)
+```
+
+```javascript
+// sub-process.js
+
+import IPOS from 'ipos'
+import {Example} from './example-class.js'
+
+const ipos = IPOS.registerClass(Example)
+const ipos = await IPOS.new()
+```
+
 ## `IPOS()`
 
 The main class. Don't use the `new` keyword (when creating an instance in a subprocess). Instead, use the

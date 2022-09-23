@@ -1,12 +1,35 @@
+function isNativeObject(value: object) {
+    return /^\[object .+?Constructor]$/.test(Object.prototype.toString.call(value))
+}
+
+export const classes: Map<string, Function> = new Map()
+export const deSerialize: Map<Function, { serialize?: (value?: object) => SerializableType, deserialize?: (value: SerializedType) => object }> = new Map()
+
+export type SerializedType =
+    string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Array<SerializedType>
+    | { [k: string]: SerializedType }
+
+export type SerializableType =
+    string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Function
+    | Array<SerializableType>
+    | { [k: string]: SerializableType }
+    | Set<SerializableType>
+    | Map<SerializableType, SerializableType>
+
 export function serialize(value: any): any | void {
     // todo: handle other builtins
     if (['string', 'number', 'boolean'].includes(typeof value) || !value) {
         return value
-    } else if (typeof value === 'function') {
-        return {
-            $$iposType: 'Function',
-            data: value.toString()
-        }
     } else if (Array.isArray(value)) {
         return value.map(v => serialize(v))
     } else if (value.constructor === {}.constructor || value.valueOf().constructor === {}.constructor) {
@@ -14,6 +37,11 @@ export function serialize(value: any): any | void {
             Array.from(Object.entries(value))
                 .map(([key, value]) => [key, serialize(value)])
         )
+    } else if (typeof value === 'function') {
+        return {
+            $$iposType: 'Function',
+            data: value.toString()
+        }
     } else if (value instanceof Set) {
         return {
             $$iposType: 'Set',
@@ -28,12 +56,21 @@ export function serialize(value: any): any | void {
                     .map(([key, value]) => [key, serialize(value)])
             )
         }
+    } else if (isNativeObject(value)) {
+        throw new Error(`Could not serialise: \`${value.constructor.name}\`.`)
     } else {
-        if (!value.stringify && !value.serialize)
+        const serializeMethod = deSerialize.get(value.constructor)?.serialize ?? value.stringify ?? value.serialize
+        if (!serializeMethod)
             throw new Error(
                 `Class: \`${value.constructor.name}\` must have methods to serialize and deserialize objects. (\`.stringify()\`, \`.serialize()\`)`
             )
-        // return value.toString()
+
+        return {
+            $$iposType: value.constructor.name,
+            data: serialize(
+                serializeMethod.call(value, value)
+            )
+        }
     }
 }
 
@@ -64,6 +101,17 @@ export function deserialize(value: string | number | Array<any> | { $$iposType?:
                 Array.from(Object.entries(value.data))
                     .map(deserialize)
             )
+        } else if (classes.has(value.$$iposType)) {
+            const constructor = classes.get(value.$$iposType) as Function
+            const deserializeMethod = deSerialize.get(constructor)?.deserialize ??
+                (constructor as unknown as { from: Function })?.from
+
+            if (!deserializeMethod)
+                throw new Error(`Did not recognize type \`${value.$$iposType}\`. Did you register it in the child process?`)
+
+            return deserializeMethod(deserialize(value.data))
+        } else {
+            throw new Error(`Did not recognize type \`${value.$$iposType}\`. Did you register it in the child process?`)
         }
     } else
         console.warn('I don\'t know', value)

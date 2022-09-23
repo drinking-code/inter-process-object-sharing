@@ -1,3 +1,23 @@
+import IPOS from '../main'
+
+class TestClass {
+    data: any
+
+    constructor(data: any) {
+        this.data = data
+    }
+
+    stringify() {
+        return this.data
+    }
+
+    static from(data: any) {
+        return new TestClass(data)
+    }
+}
+
+IPOS.registerClass(TestClass)
+
 export const examples = {
     'string': 'myString',
     'number': 42,
@@ -12,6 +32,7 @@ export const examples = {
     })),
     'set': new Set(['myItem', 42]),
     'function': (a: number, b: number) => a + b,
+    'class': new TestClass('myClass')
 }
 
 // exemplary; don't iterate every possible method, just do one direct value assignment and one method

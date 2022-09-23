@@ -17,7 +17,7 @@ describe('Synchronising fields', () =>
             await Promise.all([
                 // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
                 main_ipos.addProcess(sub_process),
-                (async () => sub_ipos = await IPOS.new())()
+                expect((async () => sub_ipos = await IPOS.new())()).resolves.not.toThrow()
             ])
 
             // @ts-ignore Variable 'sub_ipos' is used before being assigned.
