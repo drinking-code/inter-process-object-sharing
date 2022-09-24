@@ -2,7 +2,7 @@ import {ChildProcess} from 'child_process'
 import initChild from './init-child.js'
 import IPOSMessaging, {iposMessagingMessage, iposMessagingType} from './messaging.js'
 import intercept from './intercept.js'
-import {classes, deSerialize, SerializableType, SerializedType} from "./serialize";
+import {classes, deSerialize, SerializableType, SerializedType} from './serialize.js'
 
 export default class IPOS {
     private readonly fields: Map<string, any>
@@ -154,6 +154,9 @@ export default class IPOS {
         if (!process.send)
             throw new Error(`Process must have an ipc channel. Activate by passing "stdio: [<stdin>, <stdout>, <stderr>, 'ipc']" as an option.`)
         const messaging = new IPOSMessaging(process)
+        process.on('close', () => {
+            this.removeProcess(process)
+        })
 
         let registered = false, resolve: Function
         const promise: Promise<void> = new Promise(res => resolve = res)
@@ -171,6 +174,14 @@ export default class IPOS {
         // send a "ready" message to receive another "register" (if an instance is initiated)
         messaging.send('ready')
         return promise
+    }
+
+    public removeProcess(process: ChildProcess): boolean {
+        const messaging = this.processMessagingMap.get(process)
+        if (!messaging) return false
+        messaging.destroy()
+        this.processMessagingMap.delete(process)
+        return true
     }
 
     private syncProcess(process: ChildProcess): Promise<void> {

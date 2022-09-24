@@ -92,4 +92,9 @@ export default class IPOSMessaging {
     listenForAll(callback: iposMessagingCallback) {
         this.listenForType('any', callback)
     }
+
+    destroy() {
+        this.listeners.clear()
+        this.nonIPOSListeners.clear()
+    }
 }

@@ -3,6 +3,7 @@ export default class subProcessIPCLoopback {
     private readonly originalProcessOn;
     private subProcessListener?: NodeJS.MessageListener;
     private mainProcessListener?: NodeJS.MessageListener;
+    private destroyListener?: NodeJS.ExitListener;
 
     constructor() {
         this.originalProcessSend = process.send
@@ -27,8 +28,15 @@ export default class subProcessIPCLoopback {
             this.mainProcessListener(message, process.send)
     }
 
-    public on(event: 'message', listener: NodeJS.MessageListener): this {
-        this.subProcessListener = listener
+    public on(event: 'message' | 'close', listener: NodeJS.MessageListener | NodeJS.ExitListener): this {
+        switch (event) {
+            case "message":
+                this.subProcessListener = listener as NodeJS.MessageListener
+                break
+            case 'close':
+                this.destroyListener = listener as NodeJS.ExitListener
+                break
+        }
         return this
     }
 
@@ -37,5 +45,7 @@ export default class subProcessIPCLoopback {
         process.on = this.originalProcessOn
         this.mainProcessListener = undefined
         this.subProcessListener = undefined
+        if (this.destroyListener)
+            this.destroyListener(0)
     }
 }
