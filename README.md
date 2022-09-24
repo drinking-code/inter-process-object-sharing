@@ -127,6 +127,17 @@ call [`IPOS.new()`](#static-iposnew-ipos--promiseipos) for the two processes' IP
 
 **Returns:** `Promise<void>`. Use await to wait for the connection to the subprocess to be established.
 
+### `ipos.removeProcess(process: ChildProcess): boolean`
+
+Disconnect a subprocess to the IPOS instance. Closed subprocess automatically get disconnected.
+
+**Parameters:**
+
+- `process: ChildProcess` The object of a subprocess IPOS should disconnect from. What gets returned
+  by `child_process.exec()`, `child_process.execFile()`, `child_process.fork()`, or `child_process.spawn()`
+
+**Returns:** `boolean`. `true` if a process was connected and has been disconnected, or `false` if the process was not connected.
+
 ### `ipos.create(key: string, value: any)`
 
 Create a field on the IPOS instance. This value can later be accessed or updated (See
