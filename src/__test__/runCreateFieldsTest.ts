@@ -19,7 +19,6 @@ export default function createFieldsTest(
     }
 
     for (const exampleKey in examples) {
-        if (!examples.hasOwnProperty(exampleKey)) continue
         it(createLabel(exampleKey), async () => {
             const value: ValueOf<typeof examples> = examples[exampleKey as keyof typeof examples]
             await initWith(

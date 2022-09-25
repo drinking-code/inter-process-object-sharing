@@ -20,7 +20,7 @@ export type iposMessagingMessage = {
 const mustHaveSendError = new Error(`Process must have a \`.send()\` method.`)
 
 export default class IPOSMessaging {
-    private listeners: Map<iposMessagingType | 'any', Array<iposMessagingCallback>>
+    private listeners: Map<iposMessagingType, Array<iposMessagingCallback>>
     private nonIPOSListeners: Set<(message: any) => any>
     private process: ChildProcess | NodeJS.Process
 
@@ -30,32 +30,22 @@ export default class IPOSMessaging {
         if (!process.send) throw mustHaveSendError
         this.process = process
         this.process.on('message', (message: iposMessagingMessage) => {
-            try {
-                if (message.protocol !== 'ipos')
-                    // not a message from ipos
-                    return this.nonIPOSListeners.forEach(callback => callback(message))
-
-                if (message.type === 'ready') {
-                    this.send('register')
-                    return
-                }
-
-                for (const property in message) {
-                    if (!message.hasOwnProperty(property)) continue
-                    message[property] = deserialize(message[property])
-                }
-
-                if (this.listeners.has('any')) {
-                    this.listeners.get('any')
-                        ?.forEach(callback => callback(message))
-                }
-                if (this.listeners.has(message.type)) {
-                    this.listeners.get(message.type)
-                        ?.forEach(callback => callback(message))
-                }
-            } catch (e) {
+            if (!message || typeof message !== 'object' || message.protocol !== 'ipos')
                 // not a message from ipos
-                this.nonIPOSListeners.forEach(callback => callback(message))
+                return this.nonIPOSListeners.forEach(callback => callback(message))
+
+            if (message.type === 'ready') {
+                this.send('register')
+                return
+            }
+
+            for (const property in message) {
+                message[property] = deserialize(message[property])
+            }
+
+            if (this.listeners.has(message.type)) {
+                this.listeners.get(message.type)
+                    ?.forEach(callback => callback(message))
             }
         })
     }
@@ -65,21 +55,20 @@ export default class IPOSMessaging {
     }*/
 
     send(type: iposMessagingType, data?: {}) {
-        if (!this.process.send) throw mustHaveSendError
-        this.process.send({
+        (this.process as ChildProcess).send({
             protocol: 'ipos',
             type,
             ...serialize(data)
         })
     }
 
-    listenForType(type: iposMessagingType | 'any', callback: iposMessagingCallback) {
+    listenForType(type: iposMessagingType, callback: iposMessagingCallback) {
         let callbacks: Array<iposMessagingCallback> = this.listeners.get(type) ?? []
         callbacks.push(callback)
         this.listeners.set(type, callbacks)
     }
 
-    listenOnceForType(type: iposMessagingType | 'any', callback: iposMessagingCallback) {
+    listenOnceForType(type: iposMessagingType, callback: iposMessagingCallback) {
         let callbacks: Array<iposMessagingCallback> = this.listeners.get(type) ?? []
         const onceCallback = (message: iposMessagingMessage) => {
             delete callbacks[callbacks.indexOf(onceCallback)]
@@ -87,10 +76,6 @@ export default class IPOSMessaging {
         }
         callbacks.push(onceCallback)
         this.listeners.set(type, callbacks)
-    }
-
-    listenForAll(callback: iposMessagingCallback) {
-        this.listenForType('any', callback)
     }
 
     destroy() {

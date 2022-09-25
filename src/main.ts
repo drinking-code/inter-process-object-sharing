@@ -92,7 +92,7 @@ export default class IPOS {
     }
 
     private getRaw(key: string): any {
-        return this.fields.get(key)
+        return this.fieldsRaw.get(key)
     }
 
     /******************** CREATE ********************/
@@ -120,9 +120,9 @@ export default class IPOS {
         if (!message.do || !message.on) return
         if (message.do === '$$iposDefine') {
             if (!message.with) return
-            this.fieldsRaw.get(message.on)[message.with[0]] = message.with[1]
+            this.getRaw(message.on)[message.with[0]] = message.with[1]
         } else {
-            this.fieldsRaw.get(message.on)[message.do](...(message.with ?? []))
+            this.getRaw(message.on)[message.do](...(message.with ?? []))
         }
     }
 
