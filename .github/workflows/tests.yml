@@ -22,23 +22,28 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Cache lib
+      - name: Cache lib and node_modules
         uses: actions/cache@v3
         with:
-          path: lib
+          path: |
+            lib
+            node_modules
           key: ${{ runner.os }}-ipos-lib-${{ github.sha }}
 
   test:
+    needs: [ build ]
     name: Test
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Cache lib
+      - name: Cache lib and node_modules
         uses: actions/cache@v3
         with:
-          path: lib
+          path: |
+            lib
+            node_modules
           key: ${{ runner.os }}-ipos-lib-${{ github.sha }}
 
       - name: Run Tests

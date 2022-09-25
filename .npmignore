@@ -1,5 +1,6 @@
 .idea/
 .nvmrc
+coverage
 example
 src
 tsconfig.json

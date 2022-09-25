@@ -1,11 +1,11 @@
 import subProcessIPCLoopback from './subProcessIPCLoopback'
 import IPOS from '../main'
-import {withoutProcessSendSync} from './withoutProcessSendSync'
+import {withoutProcessSend} from './withoutProcessSend'
 
 export default async function createConnectedInstances(): Promise<{ main_ipos: IPOS, sub_ipos: IPOS, sub_process: subProcessIPCLoopback }> {
     const sub_process = new subProcessIPCLoopback()
     let main_ipos: IPOS, sub_ipos: IPOS
-    await withoutProcessSendSync(() => {
+    await withoutProcessSend(() => {
         main_ipos = IPOS.new() as IPOS
     })
 

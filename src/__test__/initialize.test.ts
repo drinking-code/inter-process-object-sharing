@@ -1,12 +1,12 @@
 import IPOS from '../main'
 import subProcessIPCLoopback from './subProcessIPCLoopback'
-import {withoutProcessSendSync} from './withoutProcessSendSync'
+import {withoutProcessSend} from './withoutProcessSend'
 
 describe('Initialising IPOS', () => {
     it('Create new instance in a main process', () => {
         // this is a subprocess anyway
         // just simulate main process by setting process.send to undefined (jamming the subprocess detection)
-        withoutProcessSendSync(() => {
+        withoutProcessSend(() => {
             let ipos
             expect(() => ipos = IPOS.new()).not.toThrow()
             expect(ipos).toBeInstanceOf(IPOS)
@@ -33,7 +33,7 @@ describe('Initialising IPOS', () => {
 
         const sub_ipos: Promise<IPOS> = IPOS.new() as Promise<IPOS>
         let main_ipos: IPOS
-        withoutProcessSendSync(() => {
+        withoutProcessSend(() => {
             main_ipos = IPOS.new() as IPOS
         })
 
@@ -58,7 +58,7 @@ describe('Initialising IPOS', () => {
         const sub_process = new subProcessIPCLoopback()
 
         let main_ipos: IPOS
-        withoutProcessSendSync(() => {
+        withoutProcessSend(() => {
             main_ipos = IPOS.new() as IPOS
         })
 
