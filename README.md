@@ -1,5 +1,11 @@
 # Inter Process Object Sharing [IPOS]
 
+![](https://img.shields.io/npm/v/ipos?style=flat-square)
+![](https://img.shields.io/coveralls/github/drinking-code/inter-process-object-sharing?style=flat-square)
+![](https://img.shields.io/github/workflow/status/drinking-code/inter-process-object-sharing/Test?style=flat-square)
+
+[//]: # (![]&#40;https://img.shields.io/npms-io/quality-score/ipos?style=flat-square&#41;)
+
 _Share objects across different Node.js processes. Write and read on both sides._  
 This package manages objects via IPC for you. When you create an object, it creates an equivalent on connected
 processes. When you update that object, it updates the equivalent accordingly. And if you delete the object, it will
@@ -136,7 +142,8 @@ Disconnect a subprocess to the IPOS instance. Closed subprocess automatically ge
 - `process: ChildProcess` The object of a subprocess IPOS should disconnect from. What gets returned
   by `child_process.exec()`, `child_process.execFile()`, `child_process.fork()`, or `child_process.spawn()`
 
-**Returns:** `boolean`. `true` if a process was connected and has been disconnected, or `false` if the process was not connected.
+**Returns:** `boolean`. `true` if a process was connected and has been disconnected, or `false` if the process was not
+connected.
 
 ### `ipos.create(key: string, value: any)`
 
