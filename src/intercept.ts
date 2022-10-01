@@ -29,13 +29,11 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
                 return value
             }
         },
-        set(target, name: string, value: any): boolean {
-            // @ts-ignore
-            const result = (target[name] = value)
-            if (!!result) {
-                interceptCallback(key, '$$iposDefine', name, value)
-            }
-            return !!result
+        set(target: V, name, value: any): boolean {
+            if (!target || typeof target !== 'object') return false
+            target[name as keyof typeof target] = value
+            interceptCallback(key, '$$iposDefine', name, value)
+            return true
         },
     })
 }
