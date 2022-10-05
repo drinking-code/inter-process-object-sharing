@@ -12,13 +12,13 @@ processes. When you update that object, it updates the equivalent accordingly. A
 also delete the equivalent. This works both ways, so if you change the equivalent object in a subprocess, the original
 will be changes as well.
 
-# Install
+## Install
 
 ```shell
 npm i ipos
 ```
 
-# Usage
+## Usage
 
 In the main process:
 
@@ -51,7 +51,7 @@ See [`example/main-process.js`](https://github.com/drinking-code/inter-process-o
 and [`example/sub-process.js`](https://github.com/drinking-code/inter-process-object-sharing/blob/main/example/sub-process.js)
 .
 
-## A note on class instances
+### A note on class instances
 
 To synchronise class instances, you first have to register the class with ipos _on each process_ (on which the class
 instance does not yet exist) before the synchronisation happens. That means if you want to connect two IPOS instances,
@@ -106,12 +106,12 @@ const ipos = IPOS.registerClass(Example)
 const ipos = await IPOS.new()
 ```
 
-## `IPOS()`
+### `IPOS()`
 
 The main class. Don't use the `new` keyword (when creating an instance in a subprocess). Instead, use the
 static [`IPOS.new()`](#static-iposnew-ipos--promiseipos) method to create an instance.
 
-### `static IPOS.new(): IPOS | Promise<IPOS>`
+#### `static IPOS.new(): IPOS | Promise<IPOS>`
 
 Creates a new instance. Multiple instances are not yet supported, so only create one instance per process.
 
@@ -121,7 +121,7 @@ Creates a new instance. Multiple instances are not yet supported, so only create
 - `Promise<IPOS>`, if called in a subprocess.  
   Use await to wait for the connection to the main process to be established.
 
-### `ipos.addProcess(process: ChildProcess): Promise<void>`
+#### `ipos.addProcess(process: ChildProcess): Promise<void>`
 
 Connect a subprocess to the IPOS instance. The subprocess must also
 call [`IPOS.new()`](#static-iposnew-ipos--promiseipos) for the two processes' IPOS to connect.
@@ -133,7 +133,7 @@ call [`IPOS.new()`](#static-iposnew-ipos--promiseipos) for the two processes' IP
 
 **Returns:** `Promise<void>`. Use await to wait for the connection to the subprocess to be established.
 
-### `ipos.removeProcess(process: ChildProcess): boolean`
+#### `ipos.removeProcess(process: ChildProcess): boolean`
 
 Disconnect a subprocess to the IPOS instance. Closed subprocess automatically get disconnected.
 
@@ -145,7 +145,7 @@ Disconnect a subprocess to the IPOS instance. Closed subprocess automatically ge
 **Returns:** `boolean`. `true` if a process was connected and has been disconnected, or `false` if the process was not
 connected.
 
-### `ipos.create(key: string, value: any)`
+#### `ipos.create(key: string, value: any)`
 
 Create a field on the IPOS instance. This value can later be accessed or updated (See
 [`ipos.get()`](#iposgetkey-string-any)). After creating a field, you can access and update it (even change the type)
@@ -164,7 +164,7 @@ console.log(sharedObject.myValue) // -> 'foo'
 - `key: string` A unique key.
 - `value: any` The value to be stored.
 
-### `ipos.get(key: string): any`
+#### `ipos.get(key: string): any`
 
 Get an already created field from the IPOS instance. You can also use `ipos[key: string]` to access the value. If you
 use a method on the value that changes the value, this change will also be reflected in the connected IPOS instances.
@@ -189,7 +189,7 @@ console.log(sharedObject.myArray) // -> ['myString']
 
 **Returns:** `any`. The stored value.
 
-### `ipos.delete(key: string): boolean`
+#### `ipos.delete(key: string): boolean`
 
 Deletes the field with the specified key.
 
@@ -199,9 +199,9 @@ Deletes the field with the specified key.
 
 **Returns:** `boolean`. `true` if a field existed and has been removed, or `false` if the element does not exist.
 
-# Testing
+## Testing
 
-## Glossary of terms
+### Glossary of terms
 
 - **"Synchronise"** a field: _Creating a main instance, then adding a field before connecting to a child instance._ The
   field will be transmitted along with any other fields that may have been created during the connection process
