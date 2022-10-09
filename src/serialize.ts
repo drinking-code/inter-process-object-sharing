@@ -32,7 +32,7 @@ export function serialize(value: any): any | void {
         return value
     } else if (Array.isArray(value)) {
         return value.map(v => serialize(v))
-    } else if (value.constructor === {}.constructor || value.valueOf()?.constructor === {}.constructor) {
+    } else if (value.constructor === {}.constructor || value.__original?.constructor === {}.constructor) {
         return Object.fromEntries(
             Array.from(Object.entries(value))
                 .map(([key, value]) => [key, serialize(value)])
