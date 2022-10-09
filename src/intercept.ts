@@ -1,3 +1,5 @@
+import {classes as registeredClassesMap} from './serialize.js'
+
 export default function intercept<V>(value: V, key: string, interceptCallback: (key: string, method: string, ...args: any) => void): V {
     const arrayMutatingMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']
     const objectMutatingMethods: string[] = []
@@ -11,12 +13,18 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
     mutatingMethods.set(Set, setMutatingMethods)
     mutatingMethods.set(Function, functionMutatingMethods)
 
-    if (!value || typeof value !== 'object' || !mutatingMethods.has(value.constructor))
+    const registeredClasses = Array.from(registeredClassesMap.values())
+
+    if (!value || typeof value !== 'object' || !(mutatingMethods.has(value.constructor) || registeredClasses.includes(value.constructor)))
         return value
 
     return new Proxy(value, {
         get(target, name: string) {
-            if (Reflect.has(target, name) && mutatingMethods.get(value.constructor).includes(name)) {
+            if (name === '__proxy')
+                return true
+            if (name === '__original')
+                return value
+            if (Reflect.has(target, name) && (mutatingMethods.get(value.constructor)?.includes(name) || registeredClasses.includes(value.constructor))) {
                 const method = Reflect.get(target, name)
                 return (...args: any) => {
                     interceptCallback(key, name, ...args)

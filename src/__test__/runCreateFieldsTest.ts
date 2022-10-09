@@ -30,9 +30,13 @@ export default function createFieldsTest(
                     }
                 },
                 (ipos_for_probing) => {
+                    // get originals of if is proxy
+                    const fieldByProperty = (ipos_for_probing.myField as any).__original ?? ipos_for_probing.myField
+                    const fieldByFunction = (ipos_for_probing.get('myField') as any).__original ?? ipos_for_probing.get('myField')
+
                     // lodash equal to compare maps and sets
-                    expect(_.isEqualWith(ipos_for_probing.myField, value, customizer)).toEqual(true)
-                    expect(_.isEqualWith(ipos_for_probing.get('myField'), value, customizer)).toEqual(true)
+                    expect(_.isEqualWith(fieldByProperty, value, customizer)).toEqual(true)
+                    expect(_.isEqualWith(fieldByFunction, value, customizer)).toEqual(true)
                 }
             )
         })
