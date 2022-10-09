@@ -20,8 +20,6 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
 
     return new Proxy(value, {
         get(target, name: string) {
-            if (name === '__proxy')
-                return true
             if (name === '__original')
                 return value
             if (Reflect.has(target, name) && (mutatingMethods.get(value.constructor)?.includes(name) || registeredClasses.includes(value.constructor))) {
@@ -38,7 +36,7 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
             }
         },
         set(target: V, name, value: any): boolean {
-            if (!target || typeof target !== 'object') return false
+            // if (!target || typeof target !== 'object') return false
             target[name as keyof typeof target] = value
             interceptCallback(key, '$$iposDefine', name, value)
             return true

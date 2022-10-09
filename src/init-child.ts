@@ -4,7 +4,8 @@ export default function initChild(this: IPOS) {
     let resolve: Function
     const promise = new Promise(res => resolve = res)
 
-    this.messaging?.listenForType('sync', message => {
+    // @ts-ignore Object is possibly 'undefined'
+    this.messaging.listenForType('sync', message => {
         if (!message.fields || !(message.fields instanceof Map)) return
         Array.from(message.fields.entries())
             .map(([key, value]: [string, any]) => {
@@ -14,10 +15,12 @@ export default function initChild(this: IPOS) {
         resolve()
     })
     // register with parent process
-    this.messaging?.send('register')
-
-    if (this.messaging)
-        this.mountListeners(this.messaging)
+    // @ts-ignore Object is possibly 'undefined'
+    this.messaging.send('register')
+    this.mountListeners(
+        // @ts-ignore Object is possibly 'undefined'
+        this.messaging
+    )
 
     return promise
 }
