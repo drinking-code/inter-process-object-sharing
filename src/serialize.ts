@@ -1,5 +1,6 @@
 function isNativeObject(value: object) {
-    return /^\[object .+?Constructor]$/.test(Object.prototype.toString.call(value))
+    return !!Reflect.ownKeys(global).map(key => (global as any)[key as string])
+        .find(obj => obj?.constructor === value.constructor || obj === value.constructor || obj === value)
 }
 
 export const classes: Map<string, Function> = new Map()
