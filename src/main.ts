@@ -186,9 +186,8 @@ export default class IPOS {
     private syncProcess(process: ChildProcess): Promise<void> {
         let resolve: Function
         const promise: Promise<void> = new Promise(res => resolve = res)
-        this.processMessagingMap.get(process)?.listenOnceForType('sync_ok', () => {
-            resolve()
-        })
+        this.processMessagingMap.get(process)
+            ?.listenOnceForType('sync_ok', () => resolve())
         this.processMessagingMap.get(process)?.send('sync', {fields: this.fields})
         return promise
     }

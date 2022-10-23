@@ -1,5 +1,5 @@
 import IPOS from '../main'
-import subProcessIPCLoopback from './subProcessIPCLoopback'
+import SubProcessIPCLoopback from './subProcessIPCLoopback'
 import {withoutProcessSend} from './withoutProcessSend'
 
 describe('Initialising IPOS', () => {
@@ -29,7 +29,7 @@ describe('Initialising IPOS', () => {
      */
 
     it('Connect subprocess after it has initialised', async () => {
-        const sub_process = new subProcessIPCLoopback()
+        const sub_process = new SubProcessIPCLoopback()
 
         const sub_ipos: Promise<IPOS> = IPOS.new() as Promise<IPOS>
         let main_ipos: IPOS
@@ -55,7 +55,7 @@ describe('Initialising IPOS', () => {
     })
 
     it('Connect subprocess before it has initialised', async () => {
-        const sub_process = new subProcessIPCLoopback()
+        const sub_process = new SubProcessIPCLoopback()
 
         let main_ipos: IPOS
         withoutProcessSend(() => {

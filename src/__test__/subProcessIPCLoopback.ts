@@ -1,4 +1,4 @@
-export default class subProcessIPCLoopback {
+export default class SubProcessIPCLoopback {
     private readonly originalProcessSend;
     private readonly originalProcessOn;
     private subProcessListener?: NodeJS.MessageListener;
