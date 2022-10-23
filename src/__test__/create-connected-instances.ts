@@ -1,6 +1,6 @@
-import SubProcessIPCLoopback from './subProcessIPCLoopback'
+import SubProcessIPCLoopback from './sub-process-ipc-loopback'
 import IPOS from '../main'
-import {withoutProcessSend} from './withoutProcessSend'
+import {withoutProcessSend} from './without-process-send'
 
 export default async function createConnectedInstances(): Promise<{ main_ipos: IPOS, sub_ipos: IPOS, sub_process: SubProcessIPCLoopback }> {
     const sub_process = new SubProcessIPCLoopback()
@@ -10,7 +10,7 @@ export default async function createConnectedInstances(): Promise<{ main_ipos: I
     })
 
     await Promise.all([
-        // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
+        // @ts-ignore Argument of type 'SubProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
         main_ipos.addProcess(sub_process),
         (async () => sub_ipos = await IPOS.new())()
     ])

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import IPOS from '../main'
-import {examples} from './testData'
+import {examples} from './test-data'
 
 type ValueOf<T> = T[keyof T]
 

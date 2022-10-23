@@ -1,7 +1,7 @@
 import IPOS from '../main'
 
-import createFieldsTest from './runCreateFieldsTest'
-import createConnectedInstances from './createConnectedInstances'
+import createFieldsTest from './run-create-fields-test'
+import createConnectedInstances from './create-connected-instances'
 
 describe('Creating fields in the main process', () =>
     createFieldsTest(

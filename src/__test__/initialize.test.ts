@@ -1,6 +1,6 @@
 import IPOS from '../main'
-import SubProcessIPCLoopback from './subProcessIPCLoopback'
-import {withoutProcessSend} from './withoutProcessSend'
+import SubProcessIPCLoopback from './sub-process-ipc-loopback'
+import {withoutProcessSend} from './without-process-send'
 
 describe('Initialising IPOS', () => {
     it('Create new instance in a main process', () => {
@@ -39,7 +39,7 @@ describe('Initialising IPOS', () => {
 
         let addProcessPromise
         expect(() =>
-            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
+            // @ts-ignore Argument of type 'SubProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
             addProcessPromise = main_ipos.addProcess(sub_process)
         ).not.toThrow()
 
@@ -64,7 +64,7 @@ describe('Initialising IPOS', () => {
 
         let addProcessPromise
         expect(() =>
-            // @ts-ignore Argument of type 'subProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
+            // @ts-ignore Argument of type 'SubProcessIPCLoopback' is not assignable to parameter of type 'ChildProcess'
             addProcessPromise = main_ipos.addProcess(sub_process)
         ).not.toThrow()
 

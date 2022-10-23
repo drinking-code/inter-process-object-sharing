@@ -1,10 +1,10 @@
 import child_process from 'child_process'
 
 import IPOS from '../main'
-import {withoutProcessSend} from './withoutProcessSend'
+import {withoutProcessSend} from './without-process-send'
 import IPOSMessaging from '../messaging'
-import createConnectedInstances from "./createConnectedInstances";
-import {examples} from "./testData";
+import createConnectedInstances from "./create-connected-instances";
+import {examples} from "./test-data";
 
 describe('Probing errors', () => {
     it('Changing inherent property', () => {

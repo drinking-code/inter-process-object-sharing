@@ -1,4 +1,4 @@
-import createConnectedInstances from './createConnectedInstances'
+import createConnectedInstances from './create-connected-instances'
 
 describe('Deleting fields', () => {
     it('...in the main process', async () => {

@@ -2,8 +2,8 @@ import _ from 'lodash'
 
 import IPOS from '../main'
 
-import createConnectedInstances from './createConnectedInstances'
-import {exampleChanges, examples} from './testData'
+import createConnectedInstances from './create-connected-instances'
+import {exampleChanges, examples} from './test-data'
 
 type ValueOf<T> = T[keyof T]
 
