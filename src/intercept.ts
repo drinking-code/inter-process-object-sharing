@@ -22,23 +22,27 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
         get(target, name: string) {
             if (name === '__original')
                 return value
-            if (Reflect.has(target, name) && (mutatingMethods.get(value.constructor)?.includes(name) || registeredClasses.includes(value.constructor))) {
-                const method = Reflect.get(target, name)
+            if (!Reflect.has(target, name))
+                return
+            let property = Reflect.get(target, name)
+            if (property === target.constructor)
+                return property
+            if ((
+                mutatingMethods.get(value.constructor)?.includes(name) || registeredClasses.includes(value.constructor)
+            ) && typeof property === 'function') {
                 return (...args: any) => {
                     interceptCallback(key, name, ...args)
-                    method.call(value, ...args)
+                    return property.call(target, ...args)
                 }
             } else {
-                let value = Reflect.get(target, name)
-                if (typeof value === 'function')
-                    value = value.bind(target)
-                return value
+                if (typeof property === 'function')
+                    property = property.bind(target);
+                return property;
             }
         },
         set(target: V, name, value: any): boolean {
-            // if (!target || typeof target !== 'object') return false
             target[name as keyof typeof target] = value
-            interceptCallback(key, '$$iposDefine', name, value)
+            interceptCallback(key, '$$iposDefine', name as any, value)
             return true
         },
     })
