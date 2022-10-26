@@ -1,6 +1,7 @@
 .idea
 .nvmrc
 .github
+__test__
 coverage
 example
 src
