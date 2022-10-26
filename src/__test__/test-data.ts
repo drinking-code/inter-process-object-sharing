@@ -32,7 +32,8 @@ export const examples = {
     })),
     'set': new Set(['myItem', 42]),
     'function': (a: number, b: number) => a + b,
-    'class': new TestClass('myClass')
+    'class': new TestClass('myClass'),
+    'eventTarget': new EventTarget(),
 }
 
 // exemplary; don't iterate every possible method, just do one direct value assignment and one method

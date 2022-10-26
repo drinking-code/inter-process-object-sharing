@@ -34,9 +34,15 @@ export default function createFieldsTest(
                     const fieldByProperty = (ipos_for_probing.myField as any).__original ?? ipos_for_probing.myField
                     const fieldByFunction = (ipos_for_probing.get('myField') as any).__original ?? ipos_for_probing.get('myField')
 
-                    // lodash equal to compare maps and sets
-                    expect(_.isEqualWith(fieldByProperty, value, customizer)).toEqual(true)
-                    expect(_.isEqualWith(fieldByFunction, value, customizer)).toEqual(true)
+                    // some objects cannot be "the same" (e.g. instances not holding data)
+                    if ([EventTarget].some(type => value instanceof type)) {
+                        expect(fieldByProperty.constructor === value.constructor).toBe(true)
+                        expect(fieldByFunction.constructor === value.constructor).toBe(true)
+                    } else {
+                        // lodash equal to compare maps and sets
+                        expect(_.isEqualWith(fieldByProperty, value, customizer)).toEqual(true)
+                        expect(_.isEqualWith(fieldByFunction, value, customizer)).toEqual(true)
+                    }
                 }
             )
         })
