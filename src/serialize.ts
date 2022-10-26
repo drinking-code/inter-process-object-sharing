@@ -57,6 +57,10 @@ export function serialize(value: any): any | void {
                     .map(([key, value]) => [key, serialize(value)])
             )
         }
+    } else if (value instanceof EventTarget) {
+        return {
+            $$iposType: 'EventTarget',
+        }
     } else if (!deSerialize.has(value.constructor) && isNativeObject(value)) {
         throw new Error(`Could not serialise: \`${value.constructor.name}\`.`)
     } else {
@@ -103,6 +107,8 @@ export function deserialize(value: string | number | Array<any> | { $$iposType?:
                 Array.from(Object.entries(value.data))
                     .map(deserialize)
             )
+        } else if (value.$$iposType === 'EventTarget') {
+            return new EventTarget()
         } else if (classes.has(value.$$iposType)) {
             const constructor = classes.get(value.$$iposType) as Function
             const deserializeMethod = deSerialize.get(constructor)?.deserialize ??

@@ -6,12 +6,14 @@ export default function intercept<V>(value: V, key: string, interceptCallback: (
     const mapMutatingMethods = ['clear', 'delete', 'set']
     const setMutatingMethods = ['add', 'clear', 'delete']
     const functionMutatingMethods: string[] = []
+    const eventTargetMutatingMethods = ['dispatchEvent']
     const mutatingMethods = new Map()
     mutatingMethods.set(Array, arrayMutatingMethods)
     mutatingMethods.set({}.constructor, objectMutatingMethods)
     mutatingMethods.set(Map, mapMutatingMethods)
     mutatingMethods.set(Set, setMutatingMethods)
     mutatingMethods.set(Function, functionMutatingMethods)
+    mutatingMethods.set(EventTarget, eventTargetMutatingMethods)
 
     const registeredClasses = Array.from(registeredClassesMap.values())
 
