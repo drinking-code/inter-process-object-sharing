@@ -57,7 +57,7 @@ export function serialize(value: any): any | void {
                     .map(([key, value]) => [key, serialize(value)])
             )
         }
-    } else if (isNativeObject(value)) {
+    } else if (!deSerialize.has(value.constructor) && isNativeObject(value)) {
         throw new Error(`Could not serialise: \`${value.constructor.name}\`.`)
     } else {
         value = value.__original ?? value
