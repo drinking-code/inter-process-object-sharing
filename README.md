@@ -108,12 +108,21 @@ const ipos = await IPOS.new()
 
 ### `IPOS()`
 
-The main class. Don't use the `new` keyword (when creating an instance in a subprocess). Instead, use the
-static [`IPOS.new()`](#static-iposnew-ipos--promiseipos) method to create an instance.
+The main class. Don't use the `new` keyword (when creating an instance in a subprocess). Instead, use the static
+[`IPOS.new()`](#static-iposnewconfig--synctimeout-number--ipos--promiseipos) method to create an instance.
 
-#### `static IPOS.new(): IPOS | Promise<IPOS>`
+#### `static IPOS.new(config?: { syncTimeout: number }): IPOS | Promise<IPOS>`
 
-Creates a new instance. Multiple instances are not yet supported, so only create one instance per process.
+Creates a new instance. Multiple instances are not yet supported, so only create one instance per process. If it can
+synchronise with a parent process (i.e. `process.send()` exists), it will return a Promise which resolves after the
+synchronisation happened. Sometimes `IPOS.new()` is called in a subprocess but the parent process does not have an IPOS
+instance or has an IPOS instance but does not connect to the subprocess. Because of this, the promise returned
+by `IPOS.new()` resolves after 100ms without receiving a sync signal.
+
+**Parameters:**
+
+- `config?: {}` An optional config object with:
+  - `syncTimeout: number` Time in milliseconds after which `IPOS.new()` auto-resolves
 
 **Returns:**
 
@@ -123,8 +132,8 @@ Creates a new instance. Multiple instances are not yet supported, so only create
 
 #### `ipos.addProcess(process: ChildProcess): Promise<void>`
 
-Connect a subprocess to the IPOS instance. The subprocess must also
-call [`IPOS.new()`](#static-iposnew-ipos--promiseipos) for the two processes' IPOS to connect.
+Connect a subprocess to the IPOS instance. The subprocess must also call
+[`IPOS.new()`](#static-iposnewconfig--synctimeout-number--ipos--promiseipos) for the two processes' IPOS to connect.
 
 **Parameters:**
 
