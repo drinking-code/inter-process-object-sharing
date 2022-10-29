@@ -1,8 +1,11 @@
 import IPOS from './main.js'
 
-export default function initChild(this: IPOS) {
+export default function initChild(this: IPOS, timeout: number) {
     let resolve: Function
-    const promise = new Promise(res => resolve = res)
+    const promise = new Promise((res, reject) => {
+        resolve = res
+        setTimeout(reject, timeout)
+    })
 
     // @ts-ignore Object is possibly 'undefined'
     this.messaging.listenForType('sync', message => {

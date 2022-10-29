@@ -14,12 +14,13 @@ export default class IPOS {
 
     [field: string]: unknown;
 
-    static new(): IPOS | Promise<IPOS> {
+    static new(config?: { syncTimeout: number }): IPOS | Promise<IPOS> {
         const ipos = new IPOS()
         // was called on child process
         if (process.send) {
             return new Promise(async resolve => {
-                await initChild.call(ipos)
+                await initChild.call(ipos, config?.syncTimeout || 100)
+                    .catch(() => 0)
                 resolve(ipos)
             })
         }

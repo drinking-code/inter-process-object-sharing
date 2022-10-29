@@ -80,4 +80,8 @@ describe('Initialising IPOS', () => {
 
         sub_process.destroy()
     })
+
+    it('Connect subprocess without main process', async () => {
+        await expect(IPOS.new({syncTimeout: 200})).resolves.not.toThrow()
+    })
 })
