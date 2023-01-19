@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/npm/v/ipos?style=flat-square)](https://npmjs.com/ipos)
 [![](https://img.shields.io/coveralls/github/drinking-code/inter-process-object-sharing?style=flat-square)](https://coveralls.io/github/drinking-code/inter-process-object-sharing)
-![](https://img.shields.io/github/workflow/status/drinking-code/inter-process-object-sharing/Test?style=flat-square)
+![](https://img.shields.io/github/actions/workflow/status/drinking-code/inter-process-object-sharing/tests.yml?style=flat-square)
 
 [//]: # (![]&#40;https://img.shields.io/npms-io/quality-score/ipos?style=flat-square&#41;)
 
